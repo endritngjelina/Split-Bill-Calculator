@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Bill Calculator Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #667eea 75%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 8%;
+            animation-delay: 0s;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), rgba(102, 126, 234, 0.1));
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            top: 55%;
+            right: 5%;
+            animation-delay: 2s;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 90px;
+            height: 90px;
+            bottom: 25%;
+            left: 15%;
+            animation-delay: 4s;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), rgba(102, 126, 234, 0.08));
+        }
+
+        .floating-shape:nth-child(4) {
+            width: 150px;
+            height: 150px;
+            top: 35%;
+            left: 70%;
+            animation-delay: 6s;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(118, 75, 162, 0.08));
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg) scale(1); 
+                opacity: 0.6;
+            }
+            25% { 
+                transform: translateY(-30px) rotate(90deg) scale(1.1); 
+                opacity: 0.8;
+            }
+            50% { 
+                transform: translateY(-60px) rotate(180deg) scale(0.9); 
+                opacity: 1;
+            }
+            75% { 
+                transform: translateY(-30px) rotate(270deg) scale(1.05); 
+                opacity: 0.7;
+            }
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 28px;
+            padding: 45px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.15),
+                0 16px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            width: 100%;
+            max-width: 520px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .calculator-container:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.2),
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            animation: logoFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            transform-style: preserve-3d;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { 
+                transform: translateY(0px) rotateY(0deg) scale(1); 
+                filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            }
+            50% { 
+                transform: translateY(-10px) rotateY(15deg) scale(1.05); 
+                filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+            }
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 18px 22px;
+            border: 2px solid rgba(225, 229, 233, 0.8);
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 
+                0 0 0 4px rgba(102, 126, 234, 0.15),
+                0 8px 24px rgba(102, 126, 234, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .input-field:hover:not(:focus) {
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 
+                0 6px 16px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .currency-input {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            pointer-events: none;
+        }
+
+        .currency-input .input-field {
+            padding-left: 50px;
+        }
+
+        .mood-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .mood-option {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(225, 229, 233, 0.8);
+            border-radius: 20px;
+            padding: 24px 32px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .mood-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mood-option:hover::before {
+            left: 100%;
+        }
+
+        .mood-option:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 
+                0 16px 32px rgba(0, 0, 0, 0.12),
+                0 8px 16px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .mood-option.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 20px 40px rgba(102, 126, 234, 0.3),
+                0 12px 24px rgba(118, 75, 162, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .mood-option.active:hover {
+            transform: translateY(-8px) scale(1.08);
+            box-shadow: 
+                0 24px 48px rgba(102, 126, 234, 0.4),
+                0 16px 32px rgba(118, 75, 162, 0.3);
+        }
+
+        .mood-emoji {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 12px;
+            animation: emojiFloat 2s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .mood-option.active .mood-emoji {
+            animation: emojiCelebrate 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { 
+                transform: translateY(0) rotateZ(0deg) scale(1); 
+            }
+            50% { 
+                transform: translateY(-4px) rotateZ(5deg) scale(1.05); 
+            }
+        }
+
+        @keyframes emojiCelebrate {
+            0% { transform: scale(1) rotate(0deg); }
+            15% { transform: scale(1.3) rotate(-15deg); }
+            30% { transform: scale(1.5) rotate(15deg); }
+            45% { transform: scale(1.3) rotate(-10deg); }
+            60% { transform: scale(1.4) rotate(10deg); }
+            75% { transform: scale(1.2) rotate(-5deg); }
+            90% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .mood-label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .calculate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .calculate-btn:hover::before {
+            left: 100%;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(5px);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .result-icon {
+            font-size: 20px;
+        }
+
+        .share-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .share-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .share-btn.copy {
+            background: #FF6B6B;
+        }
+
+        .share-btn.copy:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .tip-explanation {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid #FFC107;
+            font-size: 14px;
+            color: #856404;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease 0.3s;
+        }
+
+        .tip-explanation.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .advanced-features {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(108, 117, 125, 0.1);
+            border-radius: 16px;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        .feature-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @media (max-width: 600px) {
+            .calculator-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .mood-selector {
+                flex-direction: column;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div class="calculator-container">
+        <div class="header">
+            <div class="logo">💰</div>
+            <h1 class="title">Split Bill Calculator Pro</h1>
+            <p class="subtitle">Smart splitting with mood-based tip calculations</p>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Total Bill Amount</label>
+            <div class="currency-input">
+                <span class="currency-symbol">$</span>
+                <input type="number" class="input-field" id="billAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Number of People</label>
+            <input type="number" class="input-field" id="peopleCount" placeholder="2" min="1" max="50">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">How was the service?</label>
+            <div class="mood-selector">
+                <div class="mood-option" data-mood="sad" data-tip="10">
+                    <span class="mood-emoji">😞</span>
+                    <span class="mood-label">Poor</span>
+                </div>
+                <div class="mood-option active" data-mood="neutral" data-tip="18">
+                    <span class="mood-emoji">😐</span>
+                    <span class="mood-label">Good</span>
+                </div>
+                <div class="mood-option" data-mood="happy" data-tip="25">
+                    <span class="mood-emoji">😊</span>
+                    <span class="mood-label">Excellent</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="advanced-features">
+            <h3 style="margin-bottom: 20px; color: #333; font-size: 16px;">Advanced Options</h3>
+            
+            <div class="feature-toggle">
+                <span style="font-weight: 600; color: #555;">Round to nearest dollar</span>
+                <div class="toggle-switch" id="roundToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <div class="feature-toggle">
+                <span style="font-weight: 600; color: #555;">Include tax calculation</span>
+                <div class="toggle-switch" id="taxToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <div class="input-group" id="taxInput" style="display: none; margin-top: 15px;">
+                <label class="input-label">Tax Rate (%)</label>
+                <input type="number" class="input-field" id="taxRate" placeholder="8.5" step="0.1" min="0" max="50">
+            </div>
+        </div>
+
+        <button class="calculate-btn" id="calculateBtn">
+            Calculate Split
+        </button>
+
+        <div class="results" id="results">
+            <div class="result-item">
+                <span class="result-label">
+                    <span class="result-icon">💵</span>
+                    Subtotal per person
+                </span>
+                <span class="result-value" id="subtotalPerPerson">$0.00</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">
+                    <span class="result-icon">🎯</span>
+                    Tip per person
+                </span>
+                <span class="result-value" id="tipPerPerson">$0.00</span>
+            </div>
+            <div class="result-item" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border: 2px solid #667eea;">
+                <span class="result-label" style="color: #667eea;">
+                    <span class="result-icon">💰</span>
+                    Total per person
+                </span>
+                <span class="result-value" style="font-size: 24px; color: #667eea;" id="totalPerPerson">$0.00</span>
+            </div>
+        </div>
+
+        <div class="tip-explanation" id="tipExplanation">
+            <strong>💡 Smart Tip Calculation:</strong> Based on your service rating, we've calculated an optimal tip percentage to ensure fair compensation for service quality.
+        </div>
+
+        <div class="share-section">
+            <button class="share-btn" id="shareWhatsApp">
+                📱 Share via WhatsApp
+            </button>
+            <button class="share-btn copy" id="copyResults">
+                📋 Copy Results
+            </button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        Results copied to clipboard! 📋
+    </div>
+
+    <script>
+        class SplitBillCalculator {
+            constructor() {
+                this.currentMood = 'neutral';
+                this.currentTip = 18;
+                this.roundingEnabled = false;
+                this.taxEnabled = false;
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Mood selection
+                document.querySelectorAll('.mood-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        this.selectMood(e.currentTarget);
+                    });
+                });
+
+                // Calculate button
+                document.getElementById('calculateBtn').addEventListener('click', () => {
+                    this.calculateSplit();
+                });
+
+                // Enter key support
+                document.querySelectorAll('.input-field').forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.calculateSplit();
+                        }
+                    });
+                });
+
+                // Toggle switches
+                document.getElementById('roundToggle').addEventListener('click', () => {
+                    this.toggleRounding();
+                });
+
+                document.getElementById('taxToggle').addEventListener('click', () => {
+                    this.toggleTax();
+                });
+
+                // Share buttons
+                document.getElementById('shareWhatsApp').addEventListener('click', () => {
+                    this.shareToWhatsApp();
+                });
+
+                document.getElementById('copyResults').addEventListener('click', () => {
+                    this.copyToClipboard();
+                });
+
+                // Input validation and formatting
+                document.getElementById('billAmount').addEventListener('input', (e) => {
+                    this.formatCurrencyInput(e.target);
+                });
+            }
+
+            selectMood(selectedOption) {
+                // Remove active class from all options
+                document.querySelectorAll('.mood-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+
+                // Add active class to selected option
+                selectedOption.classList.add('active');
+
+                // Update current mood and tip
+                this.currentMood = selectedOption.dataset.mood;
+                this.currentTip = parseInt(selectedOption.dataset.tip);
+
+                // Add celebration animation
+                const emoji = selectedOption.querySelector('.mood-emoji');
+                emoji.style.animation = 'none';
+                emoji.offsetHeight; // Trigger reflow
+                emoji.style.animation = 'celebrate 0.8s ease-in-out';
+            }
+
+            toggleRounding() {
+                const toggle = document.getElementById('roundToggle');
+                this.roundingEnabled = !this.roundingEnabled;
+                toggle.classList.toggle('active', this.roundingEnabled);
+            }
+
+            toggleTax() {
+                const toggle = document.getElementById('taxToggle');
+                const taxInput = document.getElementById('taxInput');
+                
+                this.taxEnabled = !this.taxEnabled;
+                toggle.classList.toggle('active', this.taxEnabled);
+                
+                if (this.taxEnabled) {
+                    taxInput.style.display = 'block';
+                    taxInput.style.animation = 'fadeIn 0.3s ease';
+                } else {
+                    taxInput.style.display = 'none';
+                }
+            }
+
+            formatCurrencyInput(input) {
+                let value = input.value.replace(/[^\d.]/g, '');
+                const parts = value.split('.');
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                if (parts[1] && parts[1].length > 2) {
+                    value = parts[0] + '.' + parts[1].slice(0, 2);
+                }
+                input.value = value;
+            }
+
+            calculateSplit() {
+                const billAmount = parseFloat(document.getElementById('billAmount').value) || 0;
+                const peopleCount = parseInt(document.getElementById('peopleCount').value) || 1;
+                const taxRate = this.taxEnabled ? (parseFloat(document.getElementById('taxRate').value) || 0) : 0;
+
+                if (billAmount <= 0) {
+                    this.showNotification('Please enter a valid bill amount', 'error');
+                    return;
+                }
+
+                if (peopleCount <= 0 || peopleCount > 50) {
+                    this.showNotification('Please enter a valid number of people (1-50)', 'error');
+                    return;
+                }
+
+                // Show loading state
+                const calculateBtn = document.getElementById('calculateBtn');
+                const originalText = calculateBtn.innerHTML;
+                calculateBtn.innerHTML = '<span class="loading"></span> Calculating...';
+                calculateBtn.disabled = true;
+
+                setTimeout(() => {
+                    // Calculate tax if enabled
+                    const taxAmount = this.taxEnabled ? (billAmount * taxRate / 100) : 0;
+                    const subtotal = billAmount + taxAmount;
+                    
+                    // Calculate tip based on subtotal
+                    const tipAmount = subtotal * (this.currentTip / 100);
+                    const totalWithTip = subtotal + tipAmount;
+
+                    // Calculate per person amounts
+                    let subtotalPerPerson = subtotal / peopleCount;
+                    let tipPerPerson = tipAmount / peopleCount;
+                    let totalPerPerson = totalWithTip / peopleCount;
+
+                    // Apply rounding if enabled
+                    if (this.roundingEnabled) {
+                        subtotalPerPerson = Math.round(subtotalPerPerson);
+                        tipPerPerson = Math.round(tipPerPerson);
+                        totalPerPerson = Math.round(totalPerPerson);
+                    }
+
+                    // Store results for sharing
+                    this.lastCalculation = {
+                        billAmount,
+                        peopleCount,
+                        tipPercentage: this.currentTip,
+                        subtotalPerPerson,
+                        tipPerPerson,
+                        totalPerPerson,
+                        mood: this.currentMood,
+                        taxRate: this.taxEnabled ? taxRate : 0
+                    };
+
+                    // Display results
+                    this.displayResults(subtotalPerPerson, tipPerPerson, totalPerPerson);
+
+                    // Reset button
+                    calculateBtn.innerHTML = originalText;
+                    calculateBtn.disabled = false;
+                }, 800);
+            }
+
+            displayResults(subtotal, tip, total) {
+                document.getElementById('subtotalPerPerson').textContent = `$${subtotal.toFixed(2)}`;
+                document.getElementById('tipPerPerson').textContent = `$${tip.toFixed(2)}`;
+                document.getElementById('totalPerPerson').textContent = `$${total.toFixed(2)}`;
+
+                // Show results with animation
+                const results = document.getElementById('results');
+                const tipExplanation = document.getElementById('tipExplanation');
+                
+                results.classList.add('show');
+                tipExplanation.classList.add('show');
+
+                // Add stagger animation to result items
+                const resultItems = document.querySelectorAll('.result-item');
+                resultItems.forEach((item, index) => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        item.style.transition = 'all 0.4s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateX(0)';
+                    }, index * 150);
+                });
+            }
+
+            shareToWhatsApp() {
+                if (!this.lastCalculation) {
+                    this.showNotification('Please calculate first!', 'error');
+                    return;
+                }
+
+                const calc = this.lastCalculation;
+                const moodEmoji = calc.mood === 'happy' ? '😊' : calc.mood === 'sad' ? '😞' : '😐';
+                
+                const message = `💰 *Bill Split Results* ${moodEmoji}\n\n` +
+                    `🧾 Total Bill: $${calc.billAmount.toFixed(2)}\n` +
+                    `👥 Split ${calc.peopleCount} ways\n` +
+                    `📊 Tip: ${calc.tipPercentage}%\n\n` +
+                    `💵 Subtotal per person: $${calc.subtotalPerPerson.toFixed(2)}\n` +
+                    `🎯 Tip per person: $${calc.tipPerPerson.toFixed(2)}\n` +
+                    `💰 *Total per person: $${calc.totalPerPerson.toFixed(2)}*\n\n` +
+                    `Calculated with Split Bill Calculator Pro`;
+
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            }
+
+            copyToClipboard() {
+                if (!this.lastCalculation) {
+                    this.showNotification('Please calculate first!', 'error');
+                    return;
+                }
+
+                const calc = this.lastCalculation;
+                const text = `Bill Split Results\n\n` +
+                    `Total Bill: $${calc.billAmount.toFixed(2)}\n` +
+                    `Split ${calc.peopleCount} ways\n` +
+                    `Tip: ${calc.tipPercentage}%\n\n` +
+                    `Subtotal per person: $${calc.subtotalPerPerson.toFixed(2)}\n` +
+                    `Tip per person: $${calc.tipPerPerson.toFixed(2)}\n` +
+                    `Total per person: $${calc.totalPerPerson.toFixed(2)}`;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showNotification('Results copied to clipboard! 📋');
+                }).catch(() => {
+                    this.showNotification('Failed to copy. Please try again.', 'error');
+                });
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type === 'error' ? 'error' : ''} show`;
+                
+                if (type === 'error') {
+                    notification.style.background = '#dc3545';
+                } else {
+                    notification.style.background = '#28a745';
+                }
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Initialize the calculator when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new SplitBillCalculator();
+        });
+
+        // Add some interactive polish
+        document.addEventListener('mousemove', (e) => {
+            const shapes = document.querySelectorAll('.floating-shape');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            shapes.forEach((shape, index) => {
+                const speed = (index + 1) * 0.5;
+                const xPos = x * speed * 20;
+                const yPos = y * speed * 20;
+                shape.style.transform = `translate(${xPos}px, ${yPos}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
